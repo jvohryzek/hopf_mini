@@ -1,12 +1,14 @@
 %% MINIMAL SINGLE-SUBJECT NONLINEAR HOPF WORKFLOW
-% Author: Jakub Vohryzek
-% Email: jakub.vohryzel@upf.edu
-% Based on code by Yonatan Sanz Perl and Gustavo Deco.
+%
 %
 % Expected input format:
 %   FMRI: N-by-T BOLD matrix with regions in rows and timepoints in columns
 %   subject_id: optional scalar or string label
 %   SC: N-by-N structural connectivity matrix using the same region order
+%
+% Author: Jakub Vohryzek
+% Email: jakub.vohryzel@upf.edu
+% Based on code by Yonatan Sanz Perl and Gustavo Deco.
 
 clearvars;
 
@@ -18,8 +20,8 @@ config = struct();
 
 % Local single-subject inputs for the mini workspace.
 % Choose one of the example files in data/, for example:
-% - subject_single_100307.mat
 % - subject_single_100408.mat
+
 config.subject_data_file = fullfile(script_dir, 'data', 'subject_single_100408.mat');
 config.structural_connectivity_file = fullfile(script_dir, 'data', 'SC_single.mat');
 config.subject_index = 1;
