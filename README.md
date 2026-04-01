@@ -1,67 +1,60 @@
 # hopf_mini
 
 `hopf_mini` is a minimal, transparent, single-subject nonlinear Hopf workflow.
+It is meant to be easy to read, easy to run, and close in spirit to the main
+`hopf_core` workflow while keeping only the essential single-subject path.
 
-## Rights And Provenance
+## Overview
 
-This workspace is shared without an open-source license.
-Copyright remains with the relevant copyright holders.
+This repository keeps one explicit workflow:
 
-- Refactoring, simplification, and packaging: Jakub Vohryzek
-- Underlying model code lineage: Yonatan Sanz Perl and Gustavo Deco
+1. load one BOLD/fMRI matrix and one structural connectivity matrix
+2. detrend, bandpass-filter, and crop the empirical signal once
+3. extract one regional frequency per node
+4. build empirical `FC` and `FClag` targets from the same preprocessed signal
+5. fit one nonlinear Hopf model
+6. save one compact result file and optionally show simple diagnostic plots
 
-Treat this repository as proprietary research code for private review and
-collaboration only. Redistribution, relicensing, or reuse requires prior
-written permission from the relevant copyright holders.
+The mini workflow uses the same Butterworth + `filtfilt` preprocessing family
+as `hopf_core` and the MATLAB reference implementations.
 
-It keeps only one path:
-- one participant
-- one structural connectivity matrix
-- one BOLD/fMRI matrix
-- one extracted frequency vector
-- one fitted nonlinear Hopf model
-- one explicit GEC-sign toggle through `allow_negative_gec`
+## Repository Layout
 
-## Files
+- `run_hopf_mini.m`
+  Main entry script with visible load, preprocess, fit, save, and plot steps.
+- `fit_hopf_model_nonlinear.m`
+  Single-subject nonlinear Hopf fitter.
+- `utils/preprocess_empirical_signal.m`
+  Detrend, bandpass-filter, and crop the empirical signal.
+- `utils/fcn_extract_frequencies.m`
+  Extract regional frequencies from the preprocessed empirical signal.
+- `utils/fcn_Hopf_simulate_BOLD_from_GEC.m`
+  Simulate BOLD-like signals from fitted effective connectivity.
+- `utils/hopf_nl_step.m`
+  One nonlinear Hopf integration step.
+- `utils/compute_lagged_fc_matrix.m`
+  Build the variance-normalized lagged FC target.
 
-- `run_hopf_mini.m`: entry script with visible load, preprocess, fit, and save steps
-- `fit_hopf_model_nonlinear.m`: nonlinear single-subject fitter
-- `utils/preprocess_empirical_signal.m`: detrend, bandpass-filter, and crop one empirical BOLD matrix
-- `utils/fcn_extract_frequencies.m`: regional frequency extraction from the preprocessed empirical signal
-- `utils/fcn_Hopf_simulate_BOLD_from_GEC.m`: nonlinear Hopf simulation
-- `utils/hopf_nl_step.m`: one nonlinear Hopf state update step
+## Included Example Input
 
-The mini workspace now uses the same Butterworth plus `filtfilt` frequency-preprocessing path as `hopf_core` and the MATLAB reference implementations.
-It preprocesses once, then reuses that same detrended, filtered, post-cropped signal for both the extracted frequencies and the empirical `FC` / `FClag` targets.
+The repository ships with one example subject and one example SC matrix under
+`data/`:
 
-## Data Folder
+- `data/subject_single_100408.mat`
+- `data/SC_single.mat`
 
-Put one subject and one SC matrix under `data/`:
+Expected variables:
 
-- `subject_single_<subject_id>.mat` must contain `FMRI`
-- `subject_single_<subject_id>.mat` may also contain `subject_id`
+- `subject_single_100408.mat` must contain `FMRI`
+- `subject_single_100408.mat` may also contain `subject_id`
 - `SC_single.mat` must contain `SC`
 
 Expected shapes:
 
 - `FMRI`: `N x T` with regions in rows and timepoints in columns
-- `SC`: `N x N`
+- `SC`: `N x N` in the same region order
 
-The workspace currently includes copied example inputs:
-
-- `subject_single_100307.mat`: subject `100307` copied from the comparison dataset
-- `subject_single_100408.mat`: subject `100408` copied from the comparison dataset
-- `SC_single.mat`: the corresponding example SC copied from the shared comparison inputs
-
-## Default behavior
-
-The default script uses:
-- subject file: `data/subject_single_100408.mat`
-- SC file: `data/SC_single.mat`
-
-Those defaults can be edited directly in `run_hopf_mini.m`.
-
-## Run
+## Quick Start
 
 From MATLAB:
 
@@ -69,20 +62,32 @@ From MATLAB:
 run('/Users/jakub/Codes/Projects/Project_hopf/hopf_mini/run_hopf_mini.m')
 ```
 
-## Toggle non-negative versus signed GEC
+By default the script uses:
 
-Edit this line in `run_hopf_mini.m`:
+- subject file: `data/subject_single_100408.mat`
+- SC file: `data/SC_single.mat`
 
-```matlab
-allow_negative_gec = true;
-```
+These paths can be edited directly near the top of `run_hopf_mini.m`.
 
-- `false`: standard non-negative GEC fit
-- `true`: signed GEC fit
+## Configuration
 
-## Saved output
+The main options are intentionally explicit in `run_hopf_mini.m`:
 
-Each run saves one compact `results` struct under `results/` with:
+- empirical preprocessing:
+  `TR`, `filter_low`, `filter_high`, `frequency_smoothing_sigma`,
+  `post_filter_crop_TRs`
+- nonlinear model:
+  `Tau`, `sigma`, `a`, `learningRateFromFC`, `learningRateFromFClag`,
+  `maxC`, `max_iterations`, `stop_check_interval`, `stop_improvement`,
+  `initial_error`, `global_coupling`, `dt`, `warmup_time`
+- sign mode:
+  `allow_negative_gec = false` for non-negative GEC,
+  `allow_negative_gec = true` for signed GEC
+
+## Output
+
+Each run saves one compact `results` struct under `results/` containing:
+
 - subject metadata
 - SC and BOLD matrices
 - filtered signal before edge trimming
@@ -93,3 +98,15 @@ Each run saves one compact `results` struct under `results/` with:
 - final simulated FC
 - fit history
 - output path and summary
+
+If `config.make_plots = true`, the script also opens simple diagnostic figures
+for the fitted GEC and fit trajectories.
+
+## Rights And Provenance
+
+This repository is shared without an open-source license.
+
+- Refactoring, simplification, and packaging: Jakub Vohryzek
+- Underlying model code lineage: Yonatan Sanz Perl and Gustavo Deco
+
+Please see `LICENSE.md` for the rights and reuse terms for this repository.
