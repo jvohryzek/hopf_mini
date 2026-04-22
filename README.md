@@ -84,6 +84,40 @@ The main options are intentionally explicit in `run_hopf_mini.m`:
   `allow_negative_gec = false` for non-negative GEC,
   `allow_negative_gec = true` for signed GEC
 
+Current `run_hopf_mini.m` defaults:
+
+- input / output:
+  `subject_data_file = data/subject_single_100408.mat`,
+  `structural_connectivity_file = data/SC_single.mat`,
+  `subject_index = 1`,
+  `output_dir = results/`,
+  `make_plots = true`
+- empirical preprocessing:
+  `TR = 0.72`,
+  `filter_low = 0.008`,
+  `filter_high = 0.09`,
+  `frequency_smoothing_sigma = 0.01`,
+  `post_filter_crop_TRs = 10`
+- nonlinear model:
+  `Tau = 1`,
+  `sigma = 0.01`,
+  `a = -0.02`,
+  `learningRateFromFC = 0.0002`,
+  `learningRateFromFClag = 0.00004`,
+  `maxC = 0.1`,
+  `max_iterations = 5000`,
+  `stop_check_interval = 100`,
+  `stop_improvement = 0.001`,
+  `initial_error = 100000`,
+  `global_coupling = 1`,
+  `dt = 0.1 * TR / 2 = 0.036`,
+  `warmup_time = 3000`,
+  `allow_negative_gec = true`,
+  `verbose = true`
+
+If `fit_hopf_model_nonlinear.m` is called directly with missing options, it
+uses the same fallback defaults except `allow_negative_gec = false`.
+
 ## Output
 
 Each run saves one compact `results` struct under `results/` containing:
